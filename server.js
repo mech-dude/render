@@ -20,7 +20,7 @@ app.disable('x-powered-by');
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3306', 'https://render-client-cp7n.onrender.com', 'https://www.client.tsh-admin.site/', process.env.MYSQL_HOST],
+  origin: ['http://localhost:3000', 'http://localhost:3306', 'https://render-client-cp7n.onrender.com', 'https://www.client.tsh-admin.site', process.env.MYSQL_HOST],
   credentials: true
 }));
 
