@@ -118,6 +118,8 @@ app.post('/login', (req, res) => {
               return res.status(500).send('Internal Server Error');
           }
 
+          console.log("token:", token)
+
           //res.cookie('token', token);
           //return res.status(200).json({ user, message: "Login success" });
           res.cookie('token', token, { path: '/' , secure: true, httpOnly: false}).status(200).json({ user, message: "Login success" });
