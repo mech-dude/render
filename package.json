@@ -1,0 +1,31 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Server app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "server.js",
+    "dev": "nodemon server.js -e ejs,js,css,html,jpg,png,scss"
+  },
+  "keywords": [],
+  "author": "Juan Victoria",
+  "license": "ISC",
+  "dependencies": {
+    "@notionhq/client": "2.2.14",
+    "axios": "1.6.8",
+    "bcrypt": "5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "2.8.5",
+    "dotenv": "^16.4.5",
+    "ejs": "3.1.9",
+    "express": "4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "3.9.4"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.5.5",
+    "nodemon": "^3.1.0"
+  }
+}
