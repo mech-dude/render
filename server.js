@@ -120,7 +120,7 @@ app.post('/login', (req, res) => {
 
           //res.cookie('token', token);
           //return res.status(200).json({ user, message: "Login success" });
-          res.cookie('token', token).status(200).json({ user, message: "Login success" });
+          res.cookie('token', token, { path: '/' }).status(200).json({ user, message: "Login success" });
           console.log('Cookies:', req.cookies);
 
       });
