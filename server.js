@@ -195,7 +195,8 @@ if (process.env.NODE_ENV === 'production') {
 server.on('request', app);
 
 server.listen(process.env.PORT, function() {
-    console.log(`http/ws server listening on ${process.env.PORT}`);
+    const address = server.address(); // Get server address information
+    console.log(`http/ws server listening on ${address.address}:${address.port}`); // Print hostname and port
 });
 
 client.once('ready', () => {
