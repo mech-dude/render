@@ -182,7 +182,7 @@ const channelName = '✨t2-originals';
 
 // Determine WebSocket URL based on environment
 const wsProtocol = process.env.NODE_ENV === 'production' ? 'wss://' : 'ws://';
-const wsPort = process.env.NODE_ENV === 'production' ? `${process.env.PORT}` : '8090'; // Port for development
+const wsPort = process.env.NODE_ENV === 'production' ? `${process.env.WS_PORT}` : '8090'; // Port for development
 const wsHost = process.env.NODE_ENV === 'production' ? `${process.env.WS_HOST}` : 'localhost:';
 
 const wsUrl = `${wsProtocol}${wsHost}${wsPort}`; // Build WebSocket server Url (for prod)
@@ -296,5 +296,5 @@ client.login(botToken);
 
 
 // Start the server
-const PORT_2 = process.env.PORT_2 || 8080;
-app.listen(PORT_2, () => console.log(`Listening on PORT_2 ${PORT_2}`));
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
