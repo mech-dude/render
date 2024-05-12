@@ -1,4 +1,4 @@
-/*import { createPool, getConnection } from './models/db.js';
+import { createPool, getConnection } from './models/db.js';
 import { createNotionRouter } from './routers/notion-router.js'
 import { createHelpscoutRouter } from './routers/helpscout-router.js'
 import { getConversations } from './models/apphq-t2cases.js';
@@ -164,9 +164,9 @@ client.login(botToken);
 // Start the server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
-*/
 
-import { client, ActivityType } from './models/discordClient.js';
+
+/*import { client, ActivityType } from './models/discordClient.js';
 import { getConversations } from './models/apphq-t2cases.js';
 import { WebSocketServer } from 'ws';
 import * as http from 'http';
@@ -197,7 +197,7 @@ server.on('request', app);
 server.listen(process.env.PORT, function() {
     const address = server.address(); // Get server address information
     console.log("This is the server address", address)
-    console.log(`http/ws server listening on http://${process.env.HOST}:${process.env.PORT}`);
+    console.log(`http/ws server listening on port ${process.env.PORT}`);
 });
 
 client.once('ready', () => {
@@ -293,4 +293,4 @@ client.once('ready', () => {
 
 });
 
-client.login(botToken);
+client.login(botToken);*/

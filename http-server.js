@@ -1,4 +1,4 @@
-import { createPool, getConnection } from './models/db.js';
+/*import { createPool, getConnection } from './models/db.js';
 import { createNotionRouter } from './routers/notion-router.js'
 import { createHelpscoutRouter } from './routers/helpscout-router.js'
 import { verifyUser, handleLogin, handleLogout, serveDashboard, serveAdminDashboard } from './controllers/authController.js';
@@ -38,4 +38,4 @@ app.get('/admindashboard', verifyUser, serveAdminDashboard);
 app.get('/', (req, res) => res.send('Deployed! 🚀'));
 
 
-export default app;
+export default app;*/
