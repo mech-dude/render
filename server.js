@@ -183,14 +183,19 @@ const channelName = '✨t2-originals';
 // Determine WebSocket URL based on environment
 const wsProtocol = process.env.NODE_ENV === 'production' ? 'wss://' : 'ws://';
 const wsPort = process.env.NODE_ENV === 'production' ? '8090' : '8090'; // Port for development
+const wsHost = process.env.HOST === 'production' ? 'server.tsh-admin.site:' : 'localhost:';
 
-// Create a new WebSocket server
-const port = parseInt(wsPort);
+const wsUrl = `${wsProtocol}${wsHost}${wsPort}`; // Build WebSocket server Url (for prod)
 
-const wsUrl = `${wsProtocol}server.tsh-admin.site:${wsPort}`; // Assuming WebSocket server is hosted on localhost
+let wss; // Declare wss variable
 
-// Create a new WebSocket server
-const wss = new WebSocket.Server({ port: wsPort }); // Choose a port for your WebSocket server
+if(process.env.NODE_ENV === 'production'){
+    console.log('wsUrl:', wsUrl); 
+    wss = new WebSocket(wsUrl); 
+} else {
+    // Create a new WebSocket server (for dev only)
+    wss = new WebSocket.Server({ port: wsPort });
+}
 
 
 client.once('ready', () => {
