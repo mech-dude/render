@@ -184,7 +184,7 @@ let wss;
 
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'production') {
-    server = http.createServer();
+    server = https.createServer();
     wss = new WebSocketServer({server: server});
 } else {
     server = http.createServer();
