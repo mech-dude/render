@@ -296,5 +296,5 @@ client.login(botToken);
 
 
 // Start the server
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
+const PORT_2 = process.env.PORT_2 || 8080;
+app.listen(PORT_2, () => console.log(`Listening on PORT_2 ${PORT_2}`));
