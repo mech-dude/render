@@ -189,6 +189,7 @@ const wsUrl = `${wsProtocol}${wsHost}${wsPort}`; // Build WebSocket server Url (
 
 let wss; // Declare wss variable
 
+console.log(process.env.NODE_ENV);
 if(process.env.NODE_ENV === 'production'){
     console.log('wsUrl:', wsUrl); 
     wss = new WebSocket(wsUrl); 
