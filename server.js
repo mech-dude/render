@@ -180,8 +180,17 @@ const guildId = process.env.GUILD_ID;
 const clientId= process.env.CLIENT_ID;
 const channelName = '✨t2-originals';
 
+// Determine WebSocket URL based on environment
+const wsProtocol = process.env.NODE_ENV === 'production' ? 'wss://' : 'ws://';
+const wsPort = process.env.NODE_ENV === 'production' ? '8090' : '8090'; // Port for development
+
 // Create a new WebSocket server
-const wss = new WebSocket.Server({ port: 8090 }); // Choose a port for your WebSocket server
+const port = parseInt(wsPort);
+
+const wsUrl = `${wsProtocol}server.tsh-admin.site:${wsPort}`; // Assuming WebSocket server is hosted on localhost
+
+// Create a new WebSocket server
+const wss = new WebSocket.Server({ port: wsPort }); // Choose a port for your WebSocket server
 
 
 client.once('ready', () => {
