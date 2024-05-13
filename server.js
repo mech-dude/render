@@ -95,7 +95,7 @@ client.once('ready', () => {
         // Call function to send data over WebSocket
         setInterval(() => {
           sendDataOverWebSocket(ws);
-        }, 1000);
+        }, 2000);
 
         // Event handler for messages received from WebSocket clients
         ws.on('message', function incoming(message) {
