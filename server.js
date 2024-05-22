@@ -1,4 +1,4 @@
-import { client, ActivityType } from './models/discordClient.js';
+import { client, ActivityType, WebhookClient, EmbedBuilder, Events } from './models/discordClient.js';
 import { getConversations } from './models/apphq-t2cases.js';
 import { WebSocketServer } from 'ws';
 import * as http from 'http';
@@ -10,6 +10,20 @@ const botToken = process.env.BOT_TOKEN;
 const guildId = process.env.GUILD_ID;
 const clientId= process.env.CLIENT_ID;
 const channelName = '✨t2-originals';
+const channelId= '969306866708512838'
+
+/*const webhookClient = new WebhookClient({ url: 'https://discord.com/api/webhooks/1240426620838482021/cmGNQ-B-oMjLsl7ll1hvobEFLWLR7LUBNup5lc6qooFdAYRKBPoR5TEHNpR0YqEPJnIy' });
+const embed = new EmbedBuilder()
+	.setTitle('The Originals')
+	.setColor(0x00FFFF);
+
+webhookClient.send({
+	content: 'This is a test',
+	username: 't2-originals-bot',
+	avatarURL: 'https://i.imgur.com/AfFp7pu.png',
+	embeds: [embed],
+});*/
+
 
 let server;
 let wss;
@@ -27,20 +41,102 @@ if (process.env.NODE_ENV === 'production') {
 server.on('request', app);
 
 server.listen(process.env.PORT, function() {
-    const address = server.address(); // Get server address information
-    console.log("This is the server address", address)
-    console.log(`http/ws server listening on port ${process.env.PORT}`);
+    console.log(`Server listening on port ${process.env.PORT}`);
 });
 
-client.once('ready', () => {
+client.login(botToken);
+
+client.once(Events.ClientReady, async() => {
 
     // Set bot status and activity
     client.user.setPresence({
-        //status: 'invisible',
+        status: 'online',
         activities: [{ name: 'you...' , type: ActivityType.Watching}]
     });
     client.user.setStatus('idle')
     console.log(`${client.user.username} Bot is ready!\nBot Status: ${client.user.presence.status}`);
+
+    // Initialize a map to store the previous status of each user
+    const previousStatus = new Map();
+
+    //Print all channels in TSH
+    client.channels.cache.forEach((channel)=>{
+        //console.log(channel.name);
+        if(channel.name === '✨t2-originals'){
+            //console.log(channel.messages)
+        }
+    })    
+
+    client.on('presenceUpdate', (oldPresence, newPresence) => {
+        /* Checks status from anyone on TSH
+        if (newPresence.member) {
+            const member = newPresence.member;
+            const userName = member.user.globalName;
+
+            // Get the previous status of the user
+            const oldStatus = previousStatus.get(userName) || 'offline';
+            const newStatus = newPresence.status || 'offline';
+
+            // If the status has changed, update the status for the user
+            if (oldStatus !== newStatus) {
+                // Update the previous status map
+                previousStatus.set(userName, newStatus);
+
+                // Log the status update for the individual user
+                console.log(`Status updated for ${userName} in TSH: ${oldStatus} -> ${newStatus}`);
+            }
+        }*/
+
+        // Check if the presence update is for a member in the specific channel
+        if (newPresence.member) {
+            const member = newPresence.member;
+            const userName = member.user.globalName;
+    
+            // Get the guild from the member
+            const guild = member.guild;
+    
+            // Check if the guild contains the channel with the specified name
+            const channel = guild.channels.cache.find(channel => channel.name === channelName);
+            if(channel){               
+                channel.members.forEach((channelmember) => {
+                    if(channelmember.user.globalName === userName){
+                        // If the member is in the specific channel, proceed with status update handling
+                        const oldStatus = previousStatus.get(userName) || 'offline';
+                        const newStatus = newPresence.status || 'offline';
+            
+                        // If the status has changed, update the status for the user
+                        if (oldStatus !== newStatus) {
+                            // Update the previous status map
+                            previousStatus.set(userName, newStatus);
+            
+                            // Log the status update for the individual user
+                            console.log(`Status updated for ${userName} in ${channelName}: ${oldStatus} -> ${newStatus}`);
+                        }
+                    }
+                })
+            }
+        }
+    });
+
+
+
+    /*client.on('messageCreate', (message) => {
+        if (message.content === 'ping'){
+            message.reply('Pong!')
+        }
+    });*/
+    client.on("messageUpdate", function(oldMessage, newMessage){
+        console.log(`a message is updated`);
+    });
+
+    /*client.on('message', msg => {
+        console.log(msg.channelId)
+        if (msg.channel.id != channelId) return;
+        const message_text = msg.content;
+
+            console.log(message_text);
+
+    });*/
 
     //Search users in specific channel
     function sendConnectionData(ws) {
@@ -72,17 +168,17 @@ client.once('ready', () => {
 
     // Function to send both connection data and conversations data over WebSocket
     function sendDataOverWebSocket(ws) {
-      // Get conversations data
-      getConversations()
-          .then(conversations => {
-              // Send the conversations data over the WebSocket connection
-              ws.send(JSON.stringify({ type: 'conversationCount', data: conversations }));
-          })
-          .catch(error => {
-              console.error('Error retrieving conversations:', error);
-              // Optionally, send an error message over the WebSocket
-              ws.send(JSON.stringify({ error: 'Internal Server Error' }));
-          });
+        // Get conversations data
+        getConversations()
+            .then(conversations => {
+                // Send the conversations data over the WebSocket connection
+                ws.send(JSON.stringify({ type: 'conversationCount', data: conversations }));
+            })
+            .catch(error => {
+                console.error('Error retrieving conversations:', error);
+                // Optionally, send an error message over the WebSocket
+                ws.send(JSON.stringify({ error: 'Internal Server Error' }));
+            });
 
       // Send connection data over WebSocket
       sendConnectionData(ws);
@@ -125,4 +221,11 @@ client.once('ready', () => {
 
 });
 
-client.login(botToken);
+client.on(Events.MessageCreate, (createdMessage) => {
+    try {
+        console.log(`${createdMessage.user}:${createdMessage.content}`);
+    } catch (error) {
+        console.error('Error handling message:', error);
+    }
+});
+

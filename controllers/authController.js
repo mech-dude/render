@@ -16,14 +16,14 @@ export async function verifyUser(req, res, next) {
       }
   
       console.log(decoded);
-      const { username, role } = decoded;
+      const { username, role, name } = decoded;
       if (role === 'admin') {
-        console.log("ROLE:", role);
-        res.userData = { username, role }; // Store user role in request object
+        //console.log("ROLE:", role);
+        res.userData = { username, role , name}; // Store user role in request object
         next();
       } else if (role === 'agent') {
-        console.log("ROLE:", role);
-        res.json({ username, role });
+        //console.log("ROLE:", role);
+        res.json({ username, role});
       } else {
         console.log("Not authorized");
         return res.status(403).json("Not authorized");
@@ -48,14 +48,15 @@ export async function handleLogin(req, res) {
       }
   
       const user = results[0];
-      const tokenPayload = { username: user.username, role: user.role };
+      const tokenPayload = { role: user.role, name: user.name }; //Extract data from db
       jwt.sign(tokenPayload, process.env.JWT_SECRET_KEY, { expiresIn: '1d' }, (err, token) => {
         if (err) {
           console.error('Error signing JWT token:', err);
           return res.status(500).send('Internal Server Error');
         }
         console.log("token:", token);
-        res.cookie('token', token, { path: '/', secure: true, httpOnly: false }).status(200).json({ user, message: "Login success" });
+        const sanitizedUser = { username: user.username, role: user.role, name: user.name }; // Exclude sensitive data
+        res.cookie('token', token, { path: '/', secure: true, httpOnly: false }).status(200).json({ user: sanitizedUser, message: "Login success" });
         console.log('Cookies:', req.cookies);
       });
     } catch (error) {
@@ -74,13 +75,12 @@ export function handleLogout(req, res) {
 export async function serveDashboard(req, res) {
     try {
         // If execution reaches here, user is an admin
-        const { username, role } = res.userData;
+        const { role, name } = res.userData; // Send data to client
         const misc = {
-          message: 'Hello from Express!',
           timestamp: new Date().toLocaleTimeString(),
           apphq: await getConversations(),
         };
-        res.json({ username, role, misc });
+        res.json({ role, name, misc });
       } catch (error) {
         console.error('Error executing query:', error);
         res.status(500).json({ error: 'Internal Server Error' });
