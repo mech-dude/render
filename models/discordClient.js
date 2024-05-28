@@ -1,4 +1,4 @@
-import { ActivityType, Client, GatewayIntentBits, Partials, WebhookClient, EmbedBuilder, Events } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Partials, WebhookClient, EmbedBuilder, Events, ModalBuilder  } from 'discord.js';
 
 const client = new Client({
     intents: [
@@ -12,4 +12,4 @@ const client = new Client({
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
 });
 
-export { client, ActivityType, WebhookClient, EmbedBuilder, Events };
+export { client, ActivityType, WebhookClient, EmbedBuilder, Events, ModalBuilder };

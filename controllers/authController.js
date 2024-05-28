@@ -23,7 +23,7 @@ export async function verifyUser(req, res, next) {
         next();
       } else if (role === 'agent') {
         //console.log("ROLE:", role);
-        res.json({ username, role});
+        res.json({ username, role , name});
       } else {
         console.log("Not authorized");
         return res.status(403).json("Not authorized");
@@ -88,6 +88,6 @@ export async function serveDashboard(req, res) {
 }
 
 // Route for admin dashboard
-export async function serveAdminDashboard(req, res) {
+export async function serveAgentDashboard(req, res) {
   // Admin dashboard logic
 }

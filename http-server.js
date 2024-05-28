@@ -1,7 +1,7 @@
 import { createPool, getConnection } from './models/db.js';
 import { createNotionRouter } from './routers/notion-router.js'
 import { createHelpscoutRouter } from './routers/helpscout-router.js'
-import { verifyUser, handleLogin, handleLogout, serveDashboard, serveAdminDashboard } from './controllers/authController.js';
+import { verifyUser, handleLogin, handleLogout, serveDashboard, serveAgentDashboard } from './controllers/authController.js';
 import dotenv from 'dotenv'
 dotenv.config({ path: './.env' })
 import express, { query } from 'express';
@@ -32,7 +32,7 @@ app.use('/dashboard', createHelpscoutRouter())
 app.post('/login', handleLogin);
 app.get('/logout', handleLogout);
 app.get('/dashboard', verifyUser, serveDashboard);
-app.get('/admindashboard', verifyUser, serveAdminDashboard);
+app.get('/agentdashboard', verifyUser, serveAgentDashboard);
 
 // Route for testing server status
 app.get('/', (req, res) => res.send('Deployed! 🚀'));
