@@ -74,6 +74,14 @@ export async function handleLogin(req, res) {
   } catch (error) {
     console.error("Error retrieving user:", error);
     return res.status(500).send("Internal Server Error");
+  } finally {
+    knexDB.destroy()
+      .then(() => {
+        console.log("Connection pool closed for handleLogin");
+      })
+      .catch((err) => {
+        console.error("Error closing connection pool", err);
+      });
   }
 }
 

@@ -1,4 +1,5 @@
-import { client, ActivityType, WebhookClient, EmbedBuilder, Events, ModalBuilder  } from './models/discordClient.js';
+import { client, ActivityType, WebhookClient, EmbedBuilder, Events, ModalBuilder, Collection } from './models/discordClient.js';
+import { ping, opencase } from './commands/utility/ping.js'
 import { getConversations } from './models/apphq-t2cases.js';
 import { WebSocketServer } from 'ws';
 import * as http from 'http';
@@ -12,6 +13,7 @@ const clientId= process.env.CLIENT_ID;
 const channelName = '✨t2-originals';
 const channelId= '969306866708512838'
 
+/***************** WORKING WEBHOOK *******************/
 /*const webhookClient = new WebhookClient({ url: 'https://discord.com/api/webhooks/1240426620838482021/cmGNQ-B-oMjLsl7ll1hvobEFLWLR7LUBNup5lc6qooFdAYRKBPoR5TEHNpR0YqEPJnIy' });
 const embed = new EmbedBuilder()
 	.setTitle('The Originals')
@@ -23,6 +25,7 @@ webhookClient.send({
 	avatarURL: 'https://i.imgur.com/AfFp7pu.png',
 	embeds: [embed],
 });*/
+/***************** WORKING WEBHOOK END****************/
 
 
 let server;
@@ -58,6 +61,9 @@ client.once(Events.ClientReady, async() => {
 
     // Initialize a map to store the previous status of each user
     const previousStatus = new Map();
+
+    client.application.commands.create(ping)
+    client.application.commands.create(opencase)
 
     //Print all channels in TSH
     client.channels.cache.forEach((channel)=>{
@@ -222,49 +228,41 @@ client.once(Events.ClientReady, async() => {
 
 });
 
-client.on(Events.MessageCreate.channels, (createdMessage) => {
+client.on(Events.MessageCreate, (createdMessage) => {
     try {
-        console.log(`${createdMessage.user}:${createdMessage.content}`);
+        if(createdMessage.member.user.globalName === null) return;
+        console.log(`${createdMessage.member.user.globalName}: ${createdMessage.content}`);
     } catch (error) {
         console.error('Error handling message:', error);
     }
 });
 
-client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
+client.on(Events.InteractionCreate, async (interaction) => {
+    try {
+        // Check if the interaction is a command
+        if (!interaction.isCommand()) return;
 
-	if (interaction.commandName === 'ping') {
-		// Create the modal
-		const modal = new ModalBuilder()
-			.setCustomId('myModal')
-			.setTitle('My Modal');
+        // Extract the command name
+        const commandName = interaction.commandName;
 
-		// Add components to modal
+        // Process different commands
+        if (commandName === 'ping') {
+            await interaction.reply('Pong!');
+        } else if (commandName === 'opencase') {
 
-		// Create the text input components
-		const favoriteColorInput = new TextInputBuilder()
-			.setCustomId('favoriteColorInput')
-		    // The label is the prompt the user sees for this input
-			.setLabel("What's your favorite color?")
-		    // Short means only a single line of text
-			.setStyle(TextInputStyle.Short);
+                // Get the case number value
+                const caseNumber = interaction.options.getNumber("case_number");
 
-		const hobbiesInput = new TextInputBuilder()
-			.setCustomId('hobbiesInput')
-			.setLabel("What's some of your favorite hobbies?")
-		    // Paragraph means multiple lines of text.
-			.setStyle(TextInputStyle.Paragraph);
-
-		// An action row only holds one text input,
-		// so you need one action row per text input.
-		const firstActionRow = new ActionRowBuilder().addComponents(favoriteColorInput);
-		const secondActionRow = new ActionRowBuilder().addComponents(hobbiesInput);
-
-		// Add inputs to the modal
-		modal.addComponents(firstActionRow, secondActionRow);
-
-		// Show the modal to the user
-		await interaction.showModal(modal);
-	}
+                // Check if the case number is a valid number
+                if (isNaN(caseNumber)) {
+                    await interaction.reply("Please enter a valid case number.");
+                } else {
+                    console.log(`${interaction.member.user.globalName} opened case#: ${caseNumber} on ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
+                    await interaction.reply(`Case number: ${caseNumber}`);
+                }
+            
+        }
+    } catch (error) {
+        console.error(error);
+    }
 });
-
