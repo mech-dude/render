@@ -1,17 +1,11 @@
-import { createPool, getConnection } from './models/db.js';
 import { createNotionRouter } from './routers/notion-router.js'
 import { createHelpscoutRouter } from './routers/helpscout-router.js'
 import { verifyUser, handleLogin, handleLogout, serveDashboard, serveAgentDashboard } from './controllers/authController.js';
 import dotenv from 'dotenv'
 dotenv.config({ path: './.env' })
-import express, { query } from 'express';
+import express from 'express';
 import cors from 'cors'
-import bcrypt from 'bcrypt'
-import pkg from 'jsonwebtoken';
-const jwt = pkg;
 import cookieParser from 'cookie-parser';
-import fs from 'fs';
-import https from 'https';
 
 const app = express();
 app.use(express.json());
@@ -24,9 +18,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Initialize MySQL connection pool
-createPool();
-
+// Routes
 app.use('/dashboard', createNotionRouter())
 app.use('/dashboard', createHelpscoutRouter())
 app.post('/login', handleLogin);
@@ -36,6 +28,5 @@ app.get('/agentdashboard', verifyUser, serveAgentDashboard);
 
 // Route for testing server status
 app.get('/', (req, res) => res.send('Deployed! 🚀'));
-
 
 export default app;
