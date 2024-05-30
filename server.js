@@ -1,10 +1,31 @@
-import { client, ActivityType, WebhookClient, EmbedBuilder, Events, ModalBuilder, Collection } from './models/discordClient.js';
-import { ping, opencase } from './commands/utility/ping.js'
+import { client, ActivityType, WebhookClient, EmbedBuilder, Events, ModalBuilder, Collection, ActionRowBuilder } from './models/discordClient.js';
+import { ping, opencase } from './commands/utility/slashCommands.js'
+import { openCaseButton, closeCaseButton } from './commands/utility/buttons.js'
+
 import { getConversations } from './models/apphq-t2cases.js';
 import { WebSocketServer } from 'ws';
 import * as http from 'http';
 import * as https from 'https'
 import app from './http-server.js';
+
+let server;
+let wss;
+
+console.log(process.env.NODE_ENV);
+if (process.env.NODE_ENV === 'production') {
+    server = http.createServer();
+    wss = new WebSocketServer({server: server});
+} else {
+    server = http.createServer();
+    wss = new WebSocketServer({server: server});
+}
+
+// Also mount the app here
+server.on('request', app);
+
+server.listen(process.env.PORT, function() {
+    console.log(`Server listening on port ${process.env.PORT}`);
+});
 
 
 const botToken = process.env.BOT_TOKEN;
@@ -28,24 +49,8 @@ webhookClient.send({
 /***************** WORKING WEBHOOK END****************/
 
 
-let server;
-let wss;
-
-console.log(process.env.NODE_ENV);
-if (process.env.NODE_ENV === 'production') {
-    server = http.createServer();
-    wss = new WebSocketServer({server: server});
-} else {
-    server = http.createServer();
-    wss = new WebSocketServer({server: server});
-}
-
-// Also mount the app here
-server.on('request', app);
-
-server.listen(process.env.PORT, function() {
-    console.log(`Server listening on port ${process.env.PORT}`);
-});
+// Initialize the buttons map
+client.buttons = new Collection();
 
 client.login(botToken);
 
@@ -56,7 +61,7 @@ client.once(Events.ClientReady, async() => {
         status: 'online',
         activities: [{ name: 'you...' , type: ActivityType.Watching}]
     });
-    client.user.setStatus('idle')
+    //client.user.setStatus('online')
     console.log(`${client.user.username} Bot is ready!\nBot Status: ${client.user.presence.status}`);
 
     // Initialize a map to store the previous status of each user
@@ -105,7 +110,7 @@ client.once(Events.ClientReady, async() => {
             const channel = guild.channels.cache.find(channel => channel.name === channelName);
             if(channel){               
                 channel.members.forEach((channelmember) => {
-                    if(channelmember.user.globalName === userName){
+                    if(channelmember.user.globalName === userName && channelmember.user.globalName != null){
                         // If the member is in the specific channel, proceed with status update handling
                         const oldStatus = previousStatus.get(userName) || 'offline';
                         const newStatus = newPresence.status || 'offline';
@@ -240,7 +245,7 @@ client.on(Events.MessageCreate, (createdMessage) => {
 client.on(Events.InteractionCreate, async (interaction) => {
     try {
         // Check if the interaction is a command
-        if (!interaction.isCommand()) return;
+        //if (!interaction.isCommand()) return;
 
         // Extract the command name
         const commandName = interaction.commandName;
@@ -250,18 +255,59 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await interaction.reply('Pong!');
         } else if (commandName === 'opencase') {
 
-                // Get the case number value
-                const caseNumber = interaction.options.getNumber("case_number");
+            // Get the case number value
+            const caseNumber = interaction.options.getNumber("case_number");
 
-                // Check if the case number is a valid number
-                if (isNaN(caseNumber)) {
-                    await interaction.reply("Please enter a valid case number.");
-                } else {
-                    console.log(`${interaction.member.user.globalName} opened case#: ${caseNumber} on ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
-                    await interaction.reply(`Case number: ${caseNumber}`);
+            // Define a button handler
+            client.buttons.set('close', {
+                execute: async (interaction, client) => {
+                    // Edit the message to remove the button
+                    await interaction.update({
+                        content: `The case has been closed. #${caseNumber}`,
+                        components: [] // This removes all components, including buttons
+                    });
+                    console.log(`${interaction.member.user.globalName} closed case#: ${caseNumber} on ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
                 }
-            
+            });
+
+            // Check if the case number is a valid number
+            if (isNaN(caseNumber)) {
+                await interaction.reply("Please enter a valid case number.");
+            } else {
+                console.log(`${interaction.member.user.globalName} opened case#: ${caseNumber} on ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
+                //await interaction.reply(`Case number: ${caseNumber}`);
+                await interaction.reply({
+                    content: `Case number: ${caseNumber}`,
+                    components: [ new ActionRowBuilder().addComponents(closeCaseButton)]
+                });
+            }
+          
         }
+
+        if (interaction.isButton()) {
+            const { buttons } = client;
+            const { customId } = interaction;
+        
+            if (!buttons) {
+                console.error('Buttons map is not initialized');
+                return;
+            }
+        
+            const button = buttons.get(customId);
+        
+            if (!button) {
+                console.error('There is no code for this button.');
+                return;
+            }
+        
+            try {
+                await button.execute(interaction, client);
+            } catch (error) {
+                console.error('Error executing button:', error);
+            }
+        }
+        
+
     } catch (error) {
         console.error(error);
     }
