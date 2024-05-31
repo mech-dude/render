@@ -279,17 +279,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     } else {
                         console.error(`Case number ${caseNumber} not found in caseTimes.`);
                     }
-            
-                    // Create a new embed based on the original, modifying its content
-                    const updatedEmbed = new EmbedBuilder(originalEmbed)
-                        .setDescription(`${interaction.member.user.globalName} closed case #${caseNumber}`);
-            
-                    // Edit the message to remove the button and update the embed
-                    await interaction.update({
-                        embeds: [updatedEmbed],
-                        components: [] // This removes all components, including buttons
-                    });
-            
+
                     console.log(`${interaction.member.user.globalName} closed case#: ${caseNumber} at ${currentTimeClose}, ${new Date().toDateString()}`);
 
                     if (caseTimes[caseNumber]) {
@@ -310,11 +300,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         let minutesSpent = Math.floor(timeSpentInSeconds / 60);
                         let secondsSpent = timeSpentInSeconds % 60;
 
-                        console.log(cleanTimeStringOpen);
-                        console.log(cleanTimeStringClose);
                         console.log(`Time spent: ${hoursSpent} hours, ${minutesSpent} minutes, ${secondsSpent} seconds`);
 
+                        // Create a new embed based on the original, modifying its content
+                        const updatedEmbed = new EmbedBuilder(originalEmbed)
+                        .setDescription(`${interaction.member.user.globalName} closed case #${caseNumber}`)
+                        .setFooter({ text: `Time spent: ${hoursSpent} hours, ${minutesSpent} minutes, ${secondsSpent} seconds`, iconURL: 'https://i.imgur.com/AfFp7pu.png' })
+                
+                        // Edit the message to remove the button and update the embed
+                        await interaction.update({
+                            embeds: [updatedEmbed],
+                            components: [] // This removes all components, including buttons
+                        });
+
                     }
+            
+
+            
+
                 }
             });
 
@@ -338,7 +341,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setAuthor({ name: interaction.member.user.globalName , iconURL: interaction.user.avatarURL()})
                 .setDescription(`Case number: ${caseNumber}`)
                 .setThumbnail('https://i.imgur.com/95bnVWD.jpeg')
-                .setFooter({ text: 'Here goes the time spent on the case', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
                 await interaction.reply({
                     /*content: `Case number: ${caseNumber}`,*/
