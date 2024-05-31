@@ -59,7 +59,7 @@ export async function handleLogin(req, res) {
           console.error("Error signing JWT token:", err);
           return res.status(500).send("Internal Server Error");
         }
-        console.log("token:", token);
+        //console.log("token:", token);
         const sanitizedUser = {
           username: user.username,
           role: user.role,
@@ -107,7 +107,7 @@ export async function serveDashboard(req, res) {
   }
 }
 
-// Route for admin dashboard
+// Route for agent dashboard
 export async function serveAgentDashboard(req, res) {
-  // Admin dashboard logic
+  // Ageny dashboard logic
 }

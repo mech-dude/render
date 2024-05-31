@@ -1,6 +1,7 @@
 import { client, ActivityType, WebhookClient, EmbedBuilder, Events, ModalBuilder, Collection, ActionRowBuilder } from './models/discordClient.js';
 import { ping, opencase } from './commands/utility/slashCommands.js'
 import { openCaseButton, closeCaseButton } from './commands/utility/buttons.js'
+import {convertTo24Hour, timeStringToSeconds} from './models/timeFunctions.js'
 
 import { getConversations } from './models/apphq-t2cases.js';
 import { WebSocketServer } from 'ws';
@@ -33,6 +34,7 @@ const guildId = process.env.GUILD_ID;
 const clientId= process.env.CLIENT_ID;
 const channelName = '✨t2-originals';
 const channelId= '969306866708512838'
+const caseTimes = {};
 
 /***************** WORKING WEBHOOK *******************/
 /*const webhookClient = new WebhookClient({ url: 'https://discord.com/api/webhooks/1240426620838482021/cmGNQ-B-oMjLsl7ll1hvobEFLWLR7LUBNup5lc6qooFdAYRKBPoR5TEHNpR0YqEPJnIy' });
@@ -129,15 +131,8 @@ client.once(Events.ClientReady, async() => {
         }
     });
 
-
-
-    /*client.on('messageCreate', (message) => {
-        if (message.content === 'ping'){
-            message.reply('Pong!')
-        }
-    });*/
     client.on("messageUpdate", function(oldMessage, newMessage){
-        console.log(`a message is updated`);
+        console.log(`${oldMessage.member.user.username} updated a message`)
     });
 
     /*client.on('message', msg => {
@@ -235,8 +230,10 @@ client.once(Events.ClientReady, async() => {
 
 client.on(Events.MessageCreate, (createdMessage) => {
     try {
-        if(createdMessage.member.user.globalName === null) return;
-        console.log(`${createdMessage.member.user.globalName}: ${createdMessage.content}`);
+        if(createdMessage.author.globalName === null) return;
+        console.log("Created Message:", createdMessage.author.globalName)
+        //console.log(`${createdMessage.member.user.globalName}: ${createdMessage.content}`);
+        console.log(`${createdMessage.author.globalName}: ${createdMessage.content}`);
     } catch (error) {
         console.error('Error handling message:', error);
     }
@@ -257,8 +254,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             // Get the case number value
             const caseNumber = interaction.options.getNumber("case_number");
-
-            // Define a button handler
+            /* Define a button handler WORKING
             client.buttons.set('close', {
                 execute: async (interaction, client) => {
                     // Edit the message to remove the button
@@ -266,7 +262,59 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         content: `The case has been closed. #${caseNumber}`,
                         components: [] // This removes all components, including buttons
                     });
-                    console.log(`${interaction.member.user.globalName} closed case#: ${caseNumber} on ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
+                    console.log(`${interaction.member.user.globalName} closed case#: ${caseNumber} at ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
+                }
+            });*/
+
+            client.buttons.set('close', {
+                execute: async (interaction, client) => {
+                    const currentTimeClose = new Date().toLocaleTimeString();
+         
+                    // Retrieve the original embed
+                    const originalEmbed = interaction.message.embeds[0];
+
+                    if (caseTimes[caseNumber]) {
+                        caseTimes[caseNumber].closeTime = currentTimeClose;
+                        console.log(caseTimes)
+                    } else {
+                        console.error(`Case number ${caseNumber} not found in caseTimes.`);
+                    }
+            
+                    // Create a new embed based on the original, modifying its content
+                    const updatedEmbed = new EmbedBuilder(originalEmbed)
+                        .setDescription(`${interaction.member.user.globalName} closed case #${caseNumber}`);
+            
+                    // Edit the message to remove the button and update the embed
+                    await interaction.update({
+                        embeds: [updatedEmbed],
+                        components: [] // This removes all components, including buttons
+                    });
+            
+                    console.log(`${interaction.member.user.globalName} closed case#: ${caseNumber} at ${currentTimeClose}, ${new Date().toDateString()}`);
+
+                    if (caseTimes[caseNumber]) {
+                        const openTime = caseTimes[caseNumber].openTime;
+
+                        let cleanTimeStringOpen = convertTo24Hour(openTime);
+                        let timeInSecondsOpen = timeStringToSeconds(cleanTimeStringOpen);
+
+                        let cleanTimeStringClose = convertTo24Hour(currentTimeClose);
+                        let timeInSecondsClose = timeStringToSeconds(cleanTimeStringClose);
+
+                        // Calculate the time spent in seconds
+                        let timeSpentInSeconds = timeInSecondsClose - timeInSecondsOpen;
+
+                        // Convert the time spent back to hours, minutes, and seconds
+                        let hoursSpent = Math.floor(timeSpentInSeconds / 3600);
+                        timeSpentInSeconds %= 3600;
+                        let minutesSpent = Math.floor(timeSpentInSeconds / 60);
+                        let secondsSpent = timeSpentInSeconds % 60;
+
+                        console.log(cleanTimeStringOpen);
+                        console.log(cleanTimeStringClose);
+                        console.log(`Time spent: ${hoursSpent} hours, ${minutesSpent} minutes, ${secondsSpent} seconds`);
+
+                    }
                 }
             });
 
@@ -274,10 +322,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
             if (isNaN(caseNumber)) {
                 await interaction.reply("Please enter a valid case number.");
             } else {
-                console.log(`${interaction.member.user.globalName} opened case#: ${caseNumber} on ${new Date().toLocaleTimeString()}, ${new Date().toDateString()}`)
+                const currentTimeOpen = new Date().toLocaleTimeString();
+                console.log(`${interaction.member.user.globalName} opened case#: ${caseNumber} on ${currentTimeOpen}, ${new Date().toDateString()}`)
+
+                caseTimes[caseNumber] = { 
+                    user: interaction.member.user.globalName, 
+                    openTime: currentTimeOpen
+                };
+
                 //await interaction.reply(`Case number: ${caseNumber}`);
+                const embed = new EmbedBuilder()
+                .setTitle('Case Tracker')
+                .setColor('#69cccb')
+                .setURL('https://i.imgur.com/95bnVWD.jpeg')
+                .setAuthor({ name: interaction.member.user.globalName , iconURL: interaction.user.avatarURL()})
+                .setDescription(`Case number: ${caseNumber}`)
+                .setThumbnail('https://i.imgur.com/95bnVWD.jpeg')
+                .setFooter({ text: 'Here goes the time spent on the case', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
                 await interaction.reply({
-                    content: `Case number: ${caseNumber}`,
+                    /*content: `Case number: ${caseNumber}`,*/
+                    embeds: [embed],
                     components: [ new ActionRowBuilder().addComponents(closeCaseButton)]
                 });
             }
