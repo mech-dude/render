@@ -13,8 +13,30 @@ app.use(express.urlencoded({ extended: true }));
 app.disable('x-powered-by');
 app.use(cookieParser());
 
+
+import { createServer } from "http";
+import { Server } from "socket.io";
+
+const httpServer = createServer();
+const io = new Server(httpServer, {
+  // options
+});
+
+io.on("connection", (socket) => {
+  // ...
+  console.log("connected from socket")
+});
+
+io.on("test", (socket) => {
+  // ...
+  console.log("connected from socket")
+});
+
+
+httpServer.listen(8000);
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3306', 'https://render-client-cp7n.onrender.com', 'https://www.client.tsh-admin.site', 'http://192.168.1.11:3000', process.env.MYSQL_HOST],
+  origin: ['http://localhost:8000', 'http://localhost:8080','http://localhost:3000', 'http://localhost:3306', 'https://render-client-cp7n.onrender.com', 'https://www.client.tsh-admin.site', 'http://192.168.1.11:3000', process.env.MYSQL_HOST],
   credentials: true
 }));
 
@@ -29,4 +51,4 @@ app.get('/agentdashboard', verifyUser, serveAgentDashboard);
 // Route for testing server status
 app.get('/', (req, res) => res.send('Deployed! 🚀'));
 
-export default app;
+export { app, io };
