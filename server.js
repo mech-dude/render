@@ -4,10 +4,12 @@ import { openCaseButton, closeCaseButton } from './commands/utility/buttons.js'
 import {convertTo24Hour, timeStringToSeconds} from './models/timeFunctions.js'
 
 import { getConversations } from './models/apphq-t2cases.js';
+import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import * as http from 'http';
 import * as https from 'https'
 import app from './http-server.js';
+
 
 let server;
 let wss;
@@ -109,7 +111,7 @@ client.once(Events.ClientReady, async() => {
             const guild = member.guild;
     
             // Check if the guild contains the channel with the specified name
-            const channel = guild.channels.cache.find(channel => channel.name === channelName);
+            const channel = guild.channels.cache.find(channel => channel.id === channelId);
             if(channel){               
                 channel.members.forEach((channelmember) => {
                     if(channelmember.user.globalName === userName && channelmember.user.globalName != null){
@@ -340,7 +342,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setURL('https://i.imgur.com/95bnVWD.jpeg')
                 .setAuthor({ name: interaction.member.user.globalName , iconURL: interaction.user.avatarURL()})
                 .setDescription(`Case number: ${caseNumber}`)
-                .setThumbnail('https://i.imgur.com/95bnVWD.jpeg')
+                .setThumbnail('https://cdna.artstation.com/p/assets/images/images/006/817/664/large/pedro-augusto-untitled-12.jpg?1617185020')
 
                 await interaction.reply({
                     /*content: `Case number: ${caseNumber}`,*/
