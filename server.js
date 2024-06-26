@@ -16,9 +16,9 @@ import {
 } from "./models/timeFunctions.js";
 
 import { getConversations } from "./models/apphq-t2cases.js";
-import { app, io } from "./http-server.js";
+import { server, io } from "./http-server.js";
 
-app.listen(process.env.PORT, () =>
+server.listen(process.env.PORT, () =>
   console.log(`Server listening on port ${process.env.PORT}`)
 );
 
@@ -156,22 +156,33 @@ client.once(Events.ClientReady, async () => {
     });
   }
 
-  // Event handler for when a WebSocket connection is established
-  io.on("connection", (socket) => {
-    console.log("Socket connedtec", socket)
-  });
 
-  // Event handler for WebSocket server errors
-  io.on("error", function error(err) {
-    console.error("WebSocket server encountered an error:", err);
-  });
 
-  // Event handler for WebSocket server close
-  io.on("close", function close() {
-    console.log("WebSocket server closed.");
+});
+
+// Event handler for when a WebSocket connection is established
+io.on('connection', (socket) => {
+  console.log('Client connected');
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
   });
 });
 
+// Event handler for WebSocket connection errors
+io.engine.on("connection_error", (err) => {
+  console.error("WebSocket connection error:", err);
+});
+
+// Event handler for WebSocket server errors
+io.on("error", function error(err) {
+  console.error("WebSocket server encountered an error:", err);
+});
+
+// Event handler for WebSocket server close
+io.on("close", function close() {
+  console.log("WebSocket server closed.");
+});
 
 client.on(Events.MessageCreate, (createdMessage) => {
   try {

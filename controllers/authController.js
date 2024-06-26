@@ -9,7 +9,7 @@ export async function verifyUser(req, res, next) {
     return res.status(404).json("Token is missing");
   }
 
-  jwt.verify(token, "jwt-secret-key", (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(403).json("Error with token");
     }
@@ -29,11 +29,7 @@ export async function verifyUser(req, res, next) {
 
 // Route to handle login
 export async function handleLogin(req, res) {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "http://localhost:3000",
-    "http://192.168.1.11:3000"
-  );
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000", "http://192.168.1.11:3000");
   res.header("Access-Control-Allow-Credentials", true);
   const { username, password } = req.body;
 
@@ -44,9 +40,7 @@ export async function handleLogin(req, res) {
     }).first();
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found or incorrect password" });
+      return res.status(404).json({ message: "User not found or incorrect password" });
     }
 
     const tokenPayload = { role: user.role, name: user.name }; //Extract data from db
@@ -59,14 +53,12 @@ export async function handleLogin(req, res) {
           console.error("Error signing JWT token:", err);
           return res.status(500).send("Internal Server Error");
         }
-        //console.log("token:", token);
         const sanitizedUser = {
           username: user.username,
           role: user.role,
           name: user.name,
         }; // Exclude sensitive data
-        res
-          .cookie("token", token, { path: "/", secure: true, httpOnly: false })
+        res.cookie("token", token, { path: "/", secure: true, httpOnly: false })
           .status(200)
           .json({ user: sanitizedUser, message: "Login success" });
       }
@@ -74,14 +66,6 @@ export async function handleLogin(req, res) {
   } catch (error) {
     console.error("Error retrieving user:", error);
     return res.status(500).send("Internal Server Error");
-  } finally {
-    knexDB.destroy()
-      .then(() => {
-        console.log("Connection pool closed for handleLogin");
-      })
-      .catch((err) => {
-        console.error("Error closing connection pool", err);
-      });
   }
 }
 
@@ -109,5 +93,19 @@ export async function serveDashboard(req, res) {
 
 // Route for agent dashboard
 export async function serveAgentDashboard(req, res) {
-  // Ageny dashboard logic
+  // Agent dashboard logic
 }
+
+process.on('SIGINT', () => {
+  knexDB.destroy().then(() => {
+    console.log('Database connection pool closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  knexDB.destroy().then(() => {
+    console.log('Database connection pool closed');
+    process.exit(0);
+  });
+});
